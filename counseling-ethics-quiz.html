@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>諮商倫理決策取向測驗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500&family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: #F8F9FB;
+    color: #1E293B;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .screen { display: none; }
+  .screen.active { display: flex; }
+
+  #screen-intro {
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  #screen-quiz {
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  #screen-result {
+    min-height: 100vh;
+    justify-content: flex-start;
+    padding: 2.5rem 1rem;
+  }
+
+  .container { max-width: 480px; width: 100%; margin: 0 auto; }
+
+  /* ── Typography ── */
+  .serif { font-family: 'Noto Serif TC', serif; }
+
+  /* ── Intro ── */
+  .intro-icon-wrap {
+    width: 64px; height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #EEF0FB, #E6F5F0);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+  .intro-icon-wrap svg { width: 32px; height: 32px; }
+  .intro-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.3rem; font-weight: 500;
+    color: #1E293B; text-align: center;
+    line-height: 1.5; margin-bottom: 0.6rem;
+  }
+  .intro-sub {
+    font-size: 0.8rem; color: #94A3B8;
+    text-align: center; line-height: 1.7; margin-bottom: 2rem;
+  }
+  .topics-card {
+    background: white;
+    border: 1px solid #F1F5F9;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .topics-label {
+    font-size: 0.7rem; font-weight: 500;
+    color: #94A3B8; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 1rem;
+  }
+  .topics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .topic-item { display: flex; align-items: center; gap: 6px; }
+  .topic-dot { width: 6px; height: 6px; border-radius: 50%; background: #CBD5E1; flex-shrink: 0; }
+  .topic-text { font-size: 0.75rem; color: #64748B; }
+  .orient-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 2rem; }
+  .orient-badge {
+    border-radius: 12px; padding: 0.75rem 1rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .orient-badge svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .orient-badge span { font-size: 0.75rem; font-weight: 500; }
+  .btn-start {
+    width: 100%;
+    padding: 0.9rem;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6B7FD7, #4BAD8C);
+    color: white;
+    font-size: 0.875rem; font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.2s;
+  }
+  .btn-start:hover { opacity: 0.9; }
+  .intro-note { font-size: 0.72rem; color: #94A3B8; text-align: center; margin-top: 0.75rem; }
+
+  /* ── Progress Bar ── */
+  .progress-wrap { margin-bottom: 1.5rem; }
+  .progress-meta { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+  .progress-meta span { font-size: 0.7rem; color: #94A3B8; font-weight: 500; letter-spacing: 0.05em; }
+  .progress-track { width: 100%; height: 6px; background: #E2E8F0; border-radius: 99px; overflow: hidden; }
+  .progress-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, #6B7FD7, #4BAD8C);
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── Question Card ── */
+  .q-card {
+    background: white;
+    border: 1px solid #F1F5F9;
+    border-radius: 18px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .q-topic-badge {
+    display: inline-block;
+    font-size: 0.7rem; font-weight: 500;
+    padding: 3px 12px; border-radius: 99px;
+    background: #EEF0FB; color: #6B7FD7;
+    letter-spacing: 0.03em;
+    margin-bottom: 1rem;
+  }
+  .q-text {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.95rem; line-height: 1.8;
+    color: #1E293B; font-weight: 500;
+  }
+
+  /* ── Options ── */
+  .options { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem; }
+  .opt-btn {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+  .opt-btn:hover { border-color: #6B7FD7; box-shadow: 0 2px 8px rgba(107,127,215,0.12); }
+  .opt-btn.selected { background: #EEF0FB; border-color: #6B7FD7; border-width: 1.5px; }
+  .opt-letter {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+    background: #F1F5F9; color: #94A3B8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 600;
+    transition: background 0.2s, color 0.2s;
+  }
+  .opt-btn.selected .opt-letter { background: #6B7FD7; color: white; }
+  .opt-text { font-size: 0.82rem; line-height: 1.7; color: #475569; padding-top: 4px; }
+
+  /* ── Nav row ── */
+  .nav-row { display: flex; justify-content: flex-end; }
+  .btn-next {
+    display: flex; align-items: center; gap: 6px;
+    padding: 0.6rem 1.5rem;
+    border: none; border-radius: 12px;
+    background: linear-gradient(135deg, #6B7FD7, #4BAD8C);
+    color: white; font-size: 0.82rem; font-weight: 500;
+    font-family: inherit; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-next:disabled { background: #CBD5E1; cursor: not-allowed; opacity: 1; }
+  .btn-next:not(:disabled):hover { opacity: 0.88; }
+
+  /* ── Result ── */
+  .result-header { text-align: center; margin-bottom: 2rem; }
+  .result-done-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; font-weight: 500;
+    padding: 4px 14px; border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  .result-done-badge svg { width: 13px; height: 13px; }
+  .result-heading {
+    font-size: 1.2rem; font-weight: 500;
+    color: #1E293B; margin-bottom: 4px;
+  }
+  .result-sub { font-size: 0.72rem; color: #94A3B8; }
+
+  .dominant-card {
+    background: white;
+    border-radius: 18px;
+    border: 1px solid #E2E8F0;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .dominant-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+  .dominant-orient-label { font-size: 0.68rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .dominant-type { font-size: 1.2rem; font-weight: 500; color: #1E293B; }
+  .dominant-title { font-size: 0.9rem; color: #64748B; margin-top: 2px; }
+  .dominant-icon-wrap {
+    width: 48px; height: 48px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .dominant-icon-wrap svg { width: 22px; height: 22px; }
+  .dominant-divider { border: none; border-top: 1px solid #F8FAFC; margin: 0.75rem 0; }
+  .dominant-summary { font-size: 0.82rem; line-height: 1.8; color: #475569; margin-bottom: 0.75rem; }
+  .dominant-detail { font-size: 0.82rem; line-height: 1.8; color: #475569; }
+  .strengths-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1rem; }
+  .strength-tag { font-size: 0.72rem; font-weight: 500; padding: 4px 12px; border-radius: 99px; }
+
+  .chart-card {
+    background: white;
+    border: 1px solid #F1F5F9;
+    border-radius: 18px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .chart-section-label {
+    font-size: 0.7rem; font-weight: 500;
+    color: #94A3B8; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 1.25rem;
+  }
+  .chart-inner { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+  #radar-svg { display: block; }
+
+  .bars-wrap { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-name { font-size: 0.75rem; color: #64748B; width: 72px; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 8px; background: #F1F5F9; border-radius: 99px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; width: 0%; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+  .bar-pct { font-size: 0.72rem; font-weight: 500; color: #64748B; width: 32px; }
+
+  .disclaimer {
+    background: #FAFAFA; border: 1px solid #E2E8F0;
+    border-radius: 12px; padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .disclaimer p { font-size: 0.72rem; line-height: 1.8; color: #94A3B8; }
+
+  .btn-retry {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    background: transparent;
+    color: #64748B; font-size: 0.82rem;
+    font-family: inherit; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-retry:hover { border-color: #6B7FD7; color: #6B7FD7; }
+  .btn-retry svg { width: 14px; height: 14px; }
+
+  /* ── Animations ── */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: none; }
+  }
+  .anim-slide { animation: slideIn 0.35s cubic-bezier(.4,0,.2,1); }
+  .anim-fadeup { animation: fadeUp 0.45s ease; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ INTRO SCREEN ════════════════ -->
+<div id="screen-intro" class="screen active">
+  <div class="container">
+    <div class="intro-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#6B7FD7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9.663 17h4.673M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z"/>
+        <path d="M12 8v4l3 3"/>
+      </svg>
+    </div>
+    <h1 class="intro-title serif">諮商倫理決策取向測驗</h1>
+    <p class="intro-sub">透過八個真實倫理情境，探索您的諮商哲學取向。<br>本測驗適合準心理師及諮商實習生進行自我覺察。</p>
+
+    <div class="topics-card">
+      <p class="topics-label">涵蓋倫理主題</p>
+      <div class="topics-grid" id="topics-grid"></div>
+    </div>
+
+    <div class="orient-grid" id="orient-grid"></div>
+
+    <button class="btn-start" onclick="startQuiz()">
+      開始測驗
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <p class="intro-note">共 8 題・約需 5 分鐘</p>
+  </div>
+</div>
+
+<!-- ════════════════ QUIZ SCREEN ════════════════ -->
+<div id="screen-quiz" class="screen">
+  <div class="container">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span>進度</span>
+        <span id="prog-label">1 / 8</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div id="quiz-body" class="anim-slide"></div>
+    <div class="nav-row">
+      <button class="btn-next" id="btn-next" disabled onclick="handleNext()">
+        下一題
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ RESULT SCREEN ════════════════ -->
+<div id="screen-result" class="screen">
+  <div class="container anim-fadeup" id="result-container"></div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────
+const ORIENTATIONS = ['psychodynamic','cbt','humanistic','postmodern'];
+const ORIENT_META = {
+  psychodynamic: { label:'心理動力', color:'#6B7FD7', light:'#EEF0FB', iconPath:'M9.663 17h4.673M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zM12 8v4l3 3' },
+  cbt:           { label:'認知行為', color:'#3B9DD2', light:'#E6F4FB', iconPath:'M4 6h16M4 10h16M4 14h10M4 18h6' },
+  humanistic:    { label:'人本主義', color:'#4BAD8C', light:'#E6F5F0', iconPath:'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' },
+  postmodern:    { label:'後現代', color:'#C07A3A', light:'#FAF0E6', iconPath:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z' }
+};
+
+const QUESTIONS = [
+  {
+    topic: '保密的絕對性',
+    text: '個案告知您，他曾在三個月前對朋友動粗，目前並無暴力意圖，但您感到擔憂。您會如何處理保密原則？',
+    options: [
+      { text:'將此事件視為象徵性素材，探索攻擊性衝動的深層意涵，暫不破密。', orient:'psychodynamic' },
+      { text:'評估風險層級，若符合「可預見危害第三方」標準，則依法通報，並向個案說明。', orient:'cbt' },
+      { text:'與個案共同探討這件事對他的意義，尊重其自主，但在真誠關係中表達關切。', orient:'humanistic' },
+      { text:'好奇個案如何詮釋「攻擊」這件事，探索社會脈絡如何影響其行為，再共同決策。', orient:'postmodern' }
+    ]
+  },
+  {
+    topic: '專業界線與關係的真實性',
+    text: '個案在結案後寄來感謝信，並邀請您出席他的畢業典禮。您最可能的回應是？',
+    options: [
+      { text:'委婉拒絕，解釋雙重關係可能活化移情，影響未來若需再諮商的空間。', orient:'psychodynamic' },
+      { text:'依機構規定與倫理守則判斷是否適當，通常以不出席為宜，並說明界線的重要性。', orient:'cbt' },
+      { text:'重視真誠關係，可能出席，因為人與人的連結不應被規則截斷。', orient:'humanistic' },
+      { text:'與個案討論這個邀請對他的意義，共同探索界線的文化性與社會性建構。', orient:'postmodern' }
+    ]
+  },
+  {
+    topic: '對診斷的看法',
+    text: '個案被精神科醫師診斷為「邊緣性人格障礙」，轉介給您。您如何看待這個診斷標籤？',
+    options: [
+      { text:'診斷提供有用的理解框架，有助於思考個案的自我狀態與客體關係。', orient:'psychodynamic' },
+      { text:'診斷有助於選擇實證介入策略，如辯證行為治療，可作為治療規劃依據。', orient:'cbt' },
+      { text:'以整體的人去理解個案，標籤可能阻礙真實接觸，優先傾聽個案的主觀經驗。', orient:'humanistic' },
+      { text:'質疑診斷的社會建構性，探索標籤如何影響個案的自我認同與社會處境。', orient:'postmodern' }
+    ]
+  },
+  {
+    topic: '個案自決 vs. 心理師的價值引導',
+    text: '個案是虔誠教徒，他決定留在讓他痛苦的婚姻中，因為信仰不允許離婚。您的立場是？',
+    options: [
+      { text:'探索信仰與婚姻的深層意涵，理解其選擇背後的潛意識需求，不輕易介入。', orient:'psychodynamic' },
+      { text:'協助個案澄清其核心價值與目標，評估目前選擇是否符合其最大利益。', orient:'cbt' },
+      { text:'無條件尊重個案的自決，相信他有能力做出對自己最好的選擇。', orient:'humanistic' },
+      { text:'探索宗教、性別與文化論述如何塑造個案對「應當」的理解，拓展選擇視野。', orient:'postmodern' }
+    ]
+  },
+  {
+    topic: '心理師的自我揭露與中立性',
+    text: '個案問您：「您有沒有也曾感到迷茫過？」您會如何回應？',
+    options: [
+      { text:'將問題轉回個案：「您現在問這個問題，對您而言意味著什麼？」保持分析性中立。', orient:'psychodynamic' },
+      { text:'策略性地簡短回應，再引導個案聚焦在自身的認知與情緒狀態。', orient:'cbt' },
+      { text:'真誠地適度自我揭露，因為真實的相遇是療癒的核心條件。', orient:'humanistic' },
+      { text:'好奇個案對「迷茫」的定義，共同探索這個問題背後的社會脈絡與期待。', orient:'postmodern' }
+    ]
+  },
+  {
+    topic: '諮商目標的設定',
+    text: '第一次會談結束前，您會如何與個案討論諮商目標？',
+    options: [
+      { text:'先不急於設定目標，觀察個案如何呈現自己，理解其問題的歷史脈絡。', orient:'psychodynamic' },
+      { text:'共同設定具體、可測量的短期與長期目標，作為諮商方向的依據。', orient:'cbt' },
+      { text:'由個案主導目標，心理師的角色是協助其釐清真正想要的改變方向。', orient:'humanistic' },
+      { text:'探索個案對「改變」的期待，並好奇哪些社會論述影響了他認為自己「需要改變」。', orient:'postmodern' }
+    ]
+  },
+  {
+    topic: '諮商介入的不同',
+    text: '個案長期有拖延行為，深感苦惱。您最可能採取的介入方式是？',
+    options: [
+      { text:'探索拖延行為背後的衝突與防衛，如對失敗的恐懼或潛意識的攻擊性。', orient:'psychodynamic' },
+      { text:'辨識與拖延相關的自動化思考，設計行為實驗與時間管理策略。', orient:'cbt' },
+      { text:'傾聽個案對拖延的感受，探索它在其整體生命脈絡中的意義。', orient:'humanistic' },
+      { text:'與個案共同探索「成功」與「效率」等社會標準如何影響其自我批判。', orient:'postmodern' }
+    ]
+  },
+  {
+    topic: '危機事件的處遇方式',
+    text: '個案在會談中透露有自傷念頭，但說「不想住院」。您的第一優先處遇是？',
+    options: [
+      { text:'深入探索自傷念頭的意義與功能，理解其在個案心理結構中的位置，同步進行風險評估。', orient:'psychodynamic' },
+      { text:'進行系統性危機評估，依風險層級決定是否需要啟動安全計畫或通報。', orient:'cbt' },
+      { text:'先完整同理個案的痛苦，在真誠連結的基礎上與個案共同探討安全選項。', orient:'humanistic' },
+      { text:'好奇個案對「住院」的想像與擔憂，探索其背後的社會意涵，再共同建構因應方式。', orient:'postmodern' }
+    ]
+  }
+];
+
+const PROFILES = {
+  psychodynamic: {
+    title:'深層探索者',
+    summary:'您的諮商哲學根植於對人類內在世界的深刻好奇，相信過去的關係經驗與潛意識歷程深刻地塑造了個案當下的感知與行為。',
+    detail:'您天生對「為什麼」充滿好奇，習慣在表象背後尋找意義。在倫理困境中，您傾向先暫停、觀察、思考，而非立即行動。您重視詮釋的空間，也對權力與關係的動態保持高度敏感。您的優勢在於能夠陪伴個案進入情感的深水區，讓洗練的洞察成為療癒的媒介。未來可留意在深度探索的同時，保持對個案當下需求的靈活回應，避免過度理智化。',
+    strengths:['深度洞察','歷史脈絡敏感度','移情分析','長期陪伴']
+  },
+  cbt: {
+    title:'實證行動者',
+    summary:'您的諮商風格強調實證、結構與可測量的改變，相信思維模式深刻影響情緒與行為，而改變從辨識並調整非適應性信念開始。',
+    detail:'您在面對複雜情境時，傾向尋求清晰的框架與可操作的步驟。您善於在倫理困境中依循守則與標準進行評估，這讓您的判斷具有一致性與可預期性。您的優勢在於讓個案感受到改變是具體可達成的，並在危機時提供穩定的結構。未來可留意在技術性介入中為情感留出足夠空間，讓個案感受到被理解，不只是被「修正」。',
+    strengths:['結構化評估','風險管理','技術多元','目標導向']
+  },
+  humanistic: {
+    title:'真誠陪伴者',
+    summary:'您對人性抱持深刻的信任，相信每個人都具備成長的潛能，諮商師的核心任務是提供真誠、接納與同理的關係場域。',
+    detail:'您在面對倫理困境時，往往最先感受到個案的處境，並以真誠接觸作為判斷的重要依據。您不輕易以規則框限關係，而是相信倫理的本質在於對人的尊重。您的優勢在於讓個案感受到真正被看見與接納，這本身就是強大的療癒力量。未來可思考如何在溫暖的關係基礎上，適時引入更多結構或清晰的框架，協助個案聚焦與行動。',
+    strengths:['深層同理','真誠關係','尊重自決','存在陪伴']
+  },
+  postmodern: {
+    title:'脈絡解構者',
+    summary:'您對「現實」的本質保持高度好奇，相信個案的問題在特定的社會文化論述中被建構，而諮商是協助個案重新書寫生命故事的空間。',
+    detail:'您在面對倫理困境時，習慣先問「這個問題是如何被定義的？」，對權力、語言與社會論述保持批判意識。您不輕易接受既有的標準與框架，而是傾向與個案共同探索更多的可能性。您的優勢在於賦予個案主體性與批判思考的能力。未來可留意在後現代的開放性中，維持足夠的關係穩定度，讓個案在探索中感受到安全的錨點。',
+    strengths:['社會脈絡意識','敘事重構','批判思考','賦權導向']
+  }
+};
+
+// ── State ──────────────────────────────────────────────
+let currentQ = 0;
+let selected = null;
+let scores = { psychodynamic:0, cbt:0, humanistic:0, postmodern:0 };
+let shuffledOpts = [];
+
+// ── Init Intro ──────────────────────────────────────────
+(function initIntro() {
+  const tg = document.getElementById('topics-grid');
+  QUESTIONS.forEach(q => {
+    tg.innerHTML += `<div class="topic-item"><div class="topic-dot"></div><span class="topic-text">${q.topic}</span></div>`;
+  });
+  const og = document.getElementById('orient-grid');
+  ORIENTATIONS.forEach(o => {
+    const m = ORIENT_META[o];
+    og.innerHTML += `
+      <div class="orient-badge" style="background:${m.light}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${m.color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${m.iconPath}"/></svg>
+        <span style="color:${m.color}">${m.label}</span>
+      </div>`;
+  });
+})();
+
+// ── Screen helper ──────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Start ──────────────────────────────────────────────
+function startQuiz() {
+  currentQ = 0;
+  selected = null;
+  scores = { psychodynamic:0, cbt:0, humanistic:0, postmodern:0 };
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+// ── Render Question ────────────────────────────────────
+function shuffle(arr) { return arr.slice().sort(() => Math.random() - 0.5); }
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  shuffledOpts = shuffle(q.options);
+  selected = null;
+
+  const pct = Math.round((currentQ / QUESTIONS.length) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `${currentQ + 1} / ${QUESTIONS.length}`;
+
+  const btn = document.getElementById('btn-next');
+  btn.disabled = true;
+  btn.textContent = currentQ < QUESTIONS.length - 1 ? '下一題 ›' : '查看結果';
+
+  const body = document.getElementById('quiz-body');
+  body.style.animation = 'none';
+  body.offsetHeight; // reflow
+  body.style.animation = 'slideIn 0.35s cubic-bezier(.4,0,.2,1)';
+
+  body.innerHTML = `
+    <div class="q-card">
+      <span class="q-topic-badge">${q.topic}</span>
+      <p class="q-text serif">${q.text}</p>
+    </div>
+    <div class="options" id="options-wrap">
+      ${shuffledOpts.map((opt, i) => `
+        <button class="opt-btn" id="opt-${i}" onclick="selectOpt(${i})">
+          <span class="opt-letter">${['A','B','C','D'][i]}</span>
+          <span class="opt-text">${opt.text}</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function selectOpt(i) {
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('opt-' + i).classList.add('selected');
+  selected = i;
+  document.getElementById('btn-next').disabled = false;
+}
+
+function handleNext() {
+  if (selected === null) return;
+  scores[shuffledOpts[selected].orient]++;
+  currentQ++;
+  if (currentQ < QUESTIONS.length) {
+    renderQuestion();
+  } else {
+    renderResult();
+  }
+}
+
+// ── Render Result ──────────────────────────────────────
+function renderResult() {
+  const dominant = ORIENTATIONS.reduce((a, b) => scores[a] >= scores[b] ? a : b);
+  const meta = ORIENT_META[dominant];
+  const profile = PROFILES[dominant];
+  const total = QUESTIONS.length;
+
+  const sorted = ORIENTATIONS.slice().sort((a, b) => scores[b] - scores[a]);
+
+  const container = document.getElementById('result-container');
+  container.innerHTML = `
+    <div class="result-header">
+      <div class="result-done-badge" style="background:${meta.light};color:${meta.color}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        測驗完成
+      </div>
+      <h2 class="result-heading serif">您的取向輪廓</h2>
+      <p class="result-sub">Based on ${total} ethical scenario responses</p>
+    </div>
+
+    <div class="dominant-card" style="border-color:${meta.color}40">
+      <div class="dominant-header">
+        <div>
+          <p class="dominant-orient-label" style="color:${meta.color}">主要取向</p>
+          <p class="dominant-type serif">${meta.label}</p>
+          <p class="dominant-title">${profile.title}</p>
+        </div>
+        <div class="dominant-icon-wrap" style="background:${meta.light}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="${meta.color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${meta.iconPath}"/></svg>
+        </div>
+      </div>
+      <hr class="dominant-divider">
+      <p class="dominant-summary">${profile.summary}</p>
+      <p class="dominant-detail">${profile.detail}</p>
+      <div class="strengths-wrap">
+        ${profile.strengths.map(s => `<span class="strength-tag" style="background:${meta.light};color:${meta.color}">${s}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <p class="chart-section-label">取向分布圖</p>
+      <div class="chart-inner">
+        <svg id="radar-svg" width="220" height="220" viewBox="0 0 220 220"></svg>
+        <div class="bars-wrap" id="bars-wrap">
+          ${sorted.map(o => {
+            const pct = Math.round((scores[o] / total) * 100);
+            return `
+            <div class="bar-row">
+              <span class="bar-name">${ORIENT_META[o].label}</span>
+              <div class="bar-track"><div class="bar-fill" data-pct="${pct}" style="background:${ORIENT_META[o].color}"></div></div>
+              <span class="bar-pct">${pct}%</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <p>本測驗結果僅供自我覺察與討論之用，並非臨床診斷。每位心理師在不同情境下可能展現多元取向的彈性，建議將結果帶入督導或同儕討論，進行更深入的專業反思。</p>
+    </div>
+
+    <button class="btn-retry" onclick="startQuiz()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.71"/></svg>
+      重新測驗
+    </button>
+  `;
+
+  showScreen('screen-result');
+  drawRadar();
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.getAttribute('data-pct') + '%';
+    });
+  }, 100);
+}
+
+// ── Radar Chart ────────────────────────────────────────
+function drawRadar() {
+  const svg = document.getElementById('radar-svg');
+  const size = 220, cx = 110, cy = 110, r = 78;
+  const total = QUESTIONS.length;
+  const ns = 'http://www.w3.org/2000/svg';
+  svg.innerHTML = '';
+
+  const angles = ORIENTATIONS.map((_, i) => (i * 2 * Math.PI) / ORIENTATIONS.length - Math.PI / 2);
+
+  function pt(angle, radius) {
+    return { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+  }
+
+  // Grid
+  [0.25, 0.5, 0.75, 1].forEach(level => {
+    const pts = angles.map(a => pt(a, r * level));
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', '#E2E8F0');
+    path.setAttribute('stroke-width', '1');
+    svg.appendChild(path);
+  });
+
+  // Axes
+  angles.forEach(a => {
+    const end = pt(a, r);
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+    line.setAttribute('x2', end.x.toFixed(1)); line.setAttribute('y2', end.y.toFixed(1));
+    line.setAttribute('stroke', '#E2E8F0'); line.setAttribute('stroke-width', '1');
+    svg.appendChild(line);
+  });
+
+  // Data polygon
+  const dataPoints = ORIENTATIONS.map((o, i) => {
+    const val = Math.max(scores[o] / total, 0.05);
+    return pt(angles[i], r * val);
+  });
+  const polyPath = document.createElementNS(ns, 'path');
+  polyPath.setAttribute('d', dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z');
+  polyPath.setAttribute('fill', 'rgba(107,127,215,0.18)');
+  polyPath.setAttribute('stroke', '#6B7FD7');
+  polyPath.setAttribute('stroke-width', '2');
+  polyPath.setAttribute('stroke-linejoin', 'round');
+  svg.appendChild(polyPath);
+
+  // Dots + labels
+  ORIENTATIONS.forEach((o, i) => {
+    const p = dataPoints[i];
+    const lp = pt(angles[i], r + 22);
+    const meta = ORIENT_META[o];
+
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', p.x.toFixed(1)); circle.setAttribute('cy', p.y.toFixed(1));
+    circle.setAttribute('r', '4'); circle.setAttribute('fill', meta.color);
+    svg.appendChild(circle);
+
+    const text = document.createElementNS(ns, 'text');
+    text.setAttribute('x', lp.x.toFixed(1)); text.setAttribute('y', lp.y.toFixed(1));
+    text.setAttribute('text-anchor', 'middle'); text.setAttribute('dominant-baseline', 'central');
+    text.setAttribute('font-size', '11'); text.setAttribute('font-weight', '500');
+    text.setAttribute('fill', meta.color);
+    text.textContent = meta.label;
+    svg.appendChild(text);
+  });
+}
+</script>
+</body>
+</html>
